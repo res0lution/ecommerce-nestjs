@@ -1,15 +1,33 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import 'dotenv/config';
+
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log'], // production logger
+    bufferLogs: true,
   });
+
+  const logger = app.get(Logger);
+  app.useLogger(logger);
+
+  const config = app.get(ConfigService);
+  app.useGlobalFilters(new AllExceptionsFilter(logger, config));
+  const port = config.get<number>('port', 3000);
+  const corsOrigin = config.get<string>('corsOrigin', '*');
 
   // Global API prefix
   app.setGlobalPrefix('api');
+
+  app.use(cookieParser());
+  app.use(helmet());
 
   // Validation
   app.useGlobalPipes(
@@ -22,18 +40,16 @@ async function bootstrap(): Promise<void> {
 
   // CORS
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? '*',
+    origin: corsOrigin,
     credentials: true,
   });
 
   // Graceful shutdown
   app.enableShutdownHooks();
 
-  const portRaw = process.env.PORT;
-  const port = typeof portRaw === 'string' && portRaw !== '' ? parseInt(portRaw, 10) : 3000;
   await app.listen(port);
 
-  Logger.log(`Application is running on: http://localhost:${port}`, 'Bootstrap');
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
 
 void bootstrap();
