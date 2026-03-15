@@ -1,6 +1,6 @@
 import * as common from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 @common.Catch()
 export class AllExceptionsFilter implements common.ExceptionFilter {
@@ -30,23 +30,31 @@ export class AllExceptionsFilter implements common.ExceptionFilter {
 
     const responsePayload =
       exception instanceof common.HttpException ? exception.getResponse() : null;
+    const reqId = (request as Request & { requestId?: string }).requestId;
     const body: Record<string, unknown> = {
       statusCode: status,
       message,
       timestamp: new Date().toISOString(),
       path: request.url,
+      ...(reqId !== undefined && reqId !== '' ? { requestId: reqId } : {}),
     };
 
     if (typeof responsePayload === 'object' && responsePayload !== null) {
       Object.assign(body, responsePayload);
     }
 
-    if (!isProduction && exception instanceof Error && (exception.stack ?? '')) {
+    if (
+      !isProduction &&
+      exception instanceof Error &&
+      exception.stack !== undefined &&
+      exception.stack !== ''
+    ) {
       body.stack = exception.stack;
     }
 
+    const reqPrefix = reqId !== undefined && reqId !== '' ? `[${reqId}] ` : '';
     this.logger.error(
-      `${request.method} ${request.url} ${status} - ${message}`,
+      `${reqPrefix}${request.method} ${request.url} ${status} - ${message}`,
       exception instanceof Error ? exception.stack : undefined,
     );
 

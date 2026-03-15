@@ -4,6 +4,7 @@ import request from 'supertest';
 
 import { AppModule } from '../app.module';
 
+/* eslint-disable @typescript-eslint/no-unsafe-argument -- supertest */
 describe('App (e2e)', () => {
   let app: INestApplication;
 
