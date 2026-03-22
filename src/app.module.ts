@@ -1,3 +1,4 @@
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -35,12 +36,19 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       },
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: 60000,
+            limit: 100,
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(config.getOrThrow<string>('redis.url')),
+      }),
+    }),
     PrismaModule,
     NotificationsModule,
     AuthModule,

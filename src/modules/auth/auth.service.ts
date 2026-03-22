@@ -9,19 +9,18 @@ import {
 import { AuthProvider, AuthTokenType } from '@prisma/client';
 import * as argon2 from 'argon2';
 
-import { PrismaService } from '../../database/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { RESET_TTL_MS, VERIFY_TTL_MS } from './auth.constants';
+import type { AuthTokensResult, RefreshResult } from './auth.types';
+import { AuthRepository } from './repository/auth.repository';
 import { TokenService } from './token.service';
-
-const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
-const RESET_TTL_MS = 60 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repo: AuthRepository,
     private readonly tokens: TokenService,
     private readonly email: EmailService,
   ) {}
@@ -31,40 +30,24 @@ export class AuthService {
     email: string,
     password: string,
     meta: { device?: string; ip?: string },
-  ): Promise<{
-    user: { id: string; email: string; name: string | null };
-    accessToken: string;
-    refreshToken: string;
-  }> {
-    const existing = await this.prisma.user.findUnique({ where: { email } });
+  ): Promise<AuthTokensResult> {
+    const existing = await this.repo.findUserByEmail(email);
     if (existing) {
       throw new ConflictException('Email already registered');
     }
 
     const passwordHash = await argon2.hash(password);
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        name,
-        passwordHash,
-        provider: AuthProvider.LOCAL,
-        emailVerified: false,
-      },
-    });
+    const user = await this.repo.createLocalUser({ email, name, passwordHash });
 
     const rawVerify = this.tokens.generateOpaqueToken();
     const verifyHash = this.tokens.hashToken(rawVerify);
     const verifyExpires = new Date(Date.now() + VERIFY_TTL_MS);
-    await this.prisma.authToken.deleteMany({
-      where: { userId: user.id, type: AuthTokenType.VERIFY_EMAIL },
-    });
-    await this.prisma.authToken.create({
-      data: {
-        userId: user.id,
-        type: AuthTokenType.VERIFY_EMAIL,
-        tokenHash: verifyHash,
-        expiresAt: verifyExpires,
-      },
+    await this.repo.deleteAuthTokensByUserAndType(user.id, AuthTokenType.VERIFY_EMAIL);
+    await this.repo.createAuthToken({
+      userId: user.id,
+      type: AuthTokenType.VERIFY_EMAIL,
+      tokenHash: verifyHash,
+      expiresAt: verifyExpires,
     });
 
     try {
@@ -88,12 +71,8 @@ export class AuthService {
     email: string,
     password: string,
     meta: { device?: string; ip?: string },
-  ): Promise<{
-    user: { id: string; email: string; name: string | null };
-    accessToken: string;
-    refreshToken: string;
-  }> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  ): Promise<AuthTokensResult> {
+    const user = await this.repo.findUserByEmail(email);
     if (
       user === null ||
       user.provider !== AuthProvider.LOCAL ||
@@ -127,7 +106,7 @@ export class AuthService {
     };
   }
 
-  async refresh(refreshRaw: string | undefined): Promise<{ accessToken: string }> {
+  async refresh(refreshRaw: string | undefined): Promise<RefreshResult> {
     if (refreshRaw === undefined || refreshRaw === '') {
       throw new UnauthorizedException('Missing refresh token');
     }
@@ -144,43 +123,27 @@ export class AuthService {
 
   async verifyEmail(token: string): Promise<void> {
     const hash = this.tokens.hashToken(token);
-    const row = await this.prisma.authToken.findFirst({
-      where: {
-        type: AuthTokenType.VERIFY_EMAIL,
-        tokenHash: hash,
-        expiresAt: { gt: new Date() },
-      },
-    });
+    const row = await this.repo.findValidAuthToken(AuthTokenType.VERIFY_EMAIL, hash);
     if (!row) {
       throw new BadRequestException('Invalid or expired token');
     }
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: row.userId },
-        data: { emailVerified: true },
-      }),
-      this.prisma.authToken.delete({ where: { id: row.id } }),
-    ]);
+    await this.repo.verifyEmailAndDeleteToken(row.userId, row.id);
   }
 
   async forgotPassword(email: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.repo.findUserByEmail(email);
     if (!user || user.provider !== AuthProvider.LOCAL) {
       return;
     }
     const raw = this.tokens.generateOpaqueToken();
     const tokenHash = this.tokens.hashToken(raw);
     const expiresAt = new Date(Date.now() + RESET_TTL_MS);
-    await this.prisma.authToken.deleteMany({
-      where: { userId: user.id, type: AuthTokenType.RESET_PASSWORD },
-    });
-    await this.prisma.authToken.create({
-      data: {
-        userId: user.id,
-        type: AuthTokenType.RESET_PASSWORD,
-        tokenHash,
-        expiresAt,
-      },
+    await this.repo.deleteAuthTokensByUserAndType(user.id, AuthTokenType.RESET_PASSWORD);
+    await this.repo.createAuthToken({
+      userId: user.id,
+      type: AuthTokenType.RESET_PASSWORD,
+      tokenHash,
+      expiresAt,
     });
     try {
       await this.email.sendPasswordResetEmail(email, raw);
@@ -192,27 +155,12 @@ export class AuthService {
 
   async resetPassword(token: string, password: string): Promise<void> {
     const hash = this.tokens.hashToken(token);
-    const row = await this.prisma.authToken.findFirst({
-      where: {
-        type: AuthTokenType.RESET_PASSWORD,
-        tokenHash: hash,
-        expiresAt: { gt: new Date() },
-      },
-    });
+    const row = await this.repo.findValidAuthToken(AuthTokenType.RESET_PASSWORD, hash);
     if (!row) {
       throw new BadRequestException('Invalid or expired token');
     }
     const passwordHash = await argon2.hash(password);
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: row.userId },
-        data: { passwordHash },
-      }),
-      this.prisma.authToken.deleteMany({
-        where: { userId: row.userId, type: AuthTokenType.RESET_PASSWORD },
-      }),
-      this.prisma.refreshToken.deleteMany({ where: { userId: row.userId } }),
-    ]);
+    await this.repo.resetPasswordRevokeTokens(row.userId, passwordHash);
   }
 
   async findOrCreateOAuthUser(
@@ -222,14 +170,8 @@ export class AuthService {
     name: string | null,
     avatarUrl: string | null,
     emailVerified: boolean,
-  ): Promise<{
-    user: { id: string; email: string; name: string | null };
-    accessToken: string;
-    refreshToken: string;
-  }> {
-    let user = await this.prisma.user.findFirst({
-      where: { provider, providerId },
-    });
+  ): Promise<AuthTokensResult> {
+    let user = await this.repo.findUserByProvider(provider, providerId);
     if (user) {
       this.logger.log(`OAuth login provider=${provider} userId=${user.id}`);
       const accessToken = this.tokens.signAccess(user);
@@ -241,7 +183,7 @@ export class AuthService {
       };
     }
 
-    const byEmail = await this.prisma.user.findUnique({ where: { email } });
+    const byEmail = await this.repo.findUserByEmail(email);
     if (byEmail?.provider === AuthProvider.LOCAL) {
       throw new ConflictException('Email already registered with password');
     }
@@ -249,15 +191,13 @@ export class AuthService {
       throw new ConflictException('Email already linked to another provider');
     }
 
-    user = await this.prisma.user.create({
-      data: {
-        email,
-        name,
-        avatarUrl,
-        provider,
-        providerId,
-        emailVerified: emailVerified || true,
-      },
+    user = await this.repo.createOAuthUser({
+      email,
+      name,
+      avatarUrl,
+      provider,
+      providerId,
+      emailVerified: emailVerified || true,
     });
 
     this.logger.log(`OAuth login provider=${provider} userId=${user.id}`);

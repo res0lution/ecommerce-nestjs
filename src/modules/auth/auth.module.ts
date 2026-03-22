@@ -7,6 +7,7 @@ import { PrismaModule } from '../../database/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AuthRepository } from './repository/auth.repository';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { YandexPassportStrategy } from './strategies/yandex.strategy';
@@ -27,7 +28,14 @@ import { TokenService } from './token.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService, JwtStrategy, GoogleStrategy, YandexPassportStrategy],
+  providers: [
+    AuthRepository,
+    AuthService,
+    TokenService,
+    JwtStrategy,
+    GoogleStrategy,
+    YandexPassportStrategy,
+  ],
   exports: [AuthService, TokenService],
 })
 export class AuthModule {}

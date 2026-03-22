@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
@@ -20,11 +21,20 @@ async function bootstrap(): Promise<void> {
 
   const config = app.get(ConfigService);
   app.useGlobalFilters(new AllExceptionsFilter(logger, config));
-  const port = config.get<number>('port', 3000);
+  const port = config.get<number>('port', 4000);
   const corsOrigin = config.get<string>('corsOrigin', '*');
 
   // Global API prefix
   app.setGlobalPrefix('api');
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('E-commerce API')
+    .setVersion('1.0')
+    .addTag('auth')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.use(cookieParser());
   app.use(helmet());
