@@ -1,4 +1,5 @@
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { BullModule } from '@nestjs/bullmq';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -10,6 +11,7 @@ import { configuration } from './config';
 import { PrismaModule } from './database/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { getBullRootOptions } from './queues/bull.config';
 
 @Module({
   imports: [
@@ -39,15 +41,29 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        throttlers: [
+      useFactory: (config: ConfigService) => {
+        const throttlers = [
           {
             ttl: 60000,
             limit: 100,
           },
-        ],
-        storage: new ThrottlerStorageRedisService(config.getOrThrow<string>('redis.url')),
-      }),
+        ];
+        const nodeEnv = config.get<string>('nodeEnv');
+
+        if (nodeEnv === 'test') {
+          return { throttlers };
+        }
+
+        return {
+          throttlers,
+          storage: new ThrottlerStorageRedisService(config.getOrThrow<string>('redis.url')),
+        };
+      },
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: getBullRootOptions,
     }),
     PrismaModule,
     NotificationsModule,

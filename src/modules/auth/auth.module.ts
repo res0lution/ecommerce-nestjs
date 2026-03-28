@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { PrismaModule } from '../../database/prisma.module';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { AuthEmailQueueModule } from '../../queues/auth-email-queue.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthRepository } from './repository/auth.repository';
@@ -16,7 +16,7 @@ import { TokenService } from './token.service';
 @Module({
   imports: [
     PrismaModule,
-    NotificationsModule,
+    AuthEmailQueueModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

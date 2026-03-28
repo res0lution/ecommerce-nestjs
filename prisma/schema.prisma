@@ -64,5 +64,6 @@ model AuthToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
+  @@index([type, tokenHash, expiresAt])
   @@map("auth_tokens")
 }

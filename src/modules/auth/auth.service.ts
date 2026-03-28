@@ -9,7 +9,7 @@ import {
 import { AuthProvider, AuthTokenType } from '@prisma/client';
 import * as argon2 from 'argon2';
 
-import { EmailService } from '../notifications/email.service';
+import { AuthEmailProducer } from '../../queues/auth-email.producer';
 import { RESET_TTL_MS, VERIFY_TTL_MS } from './auth.constants';
 import type { AuthTokensResult, RefreshResult } from './auth.types';
 import { AuthRepository } from './repository/auth.repository';
@@ -22,7 +22,7 @@ export class AuthService {
   constructor(
     private readonly repo: AuthRepository,
     private readonly tokens: TokenService,
-    private readonly email: EmailService,
+    private readonly authEmailProducer: AuthEmailProducer,
   ) {}
 
   async register(
@@ -51,10 +51,10 @@ export class AuthService {
     });
 
     try {
-      await this.email.sendVerificationEmail(email, rawVerify);
+      await this.authEmailProducer.enqueueVerificationEmail(email, rawVerify);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      this.logger.warn(`Verification email failed: ${msg}`);
+      this.logger.warn(`Verification email enqueue failed: ${msg}`);
     }
 
     const accessToken = this.tokens.signAccess(user);
@@ -146,10 +146,10 @@ export class AuthService {
       expiresAt,
     });
     try {
-      await this.email.sendPasswordResetEmail(email, raw);
+      await this.authEmailProducer.enqueuePasswordResetEmail(email, raw);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      this.logger.warn(`Reset email failed: ${msg}`);
+      this.logger.warn(`Reset email enqueue failed: ${msg}`);
     }
   }
 

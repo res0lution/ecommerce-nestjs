@@ -2,6 +2,8 @@ import { config } from 'dotenv';
 
 config({ path: '.env' });
 
+process.env.NODE_ENV = 'test';
+
 const setIfShort = (key: string, value: string, minLen: number): void => {
   const cur = process.env[key];
   if (cur === undefined || cur === '' || cur.length < minLen) {

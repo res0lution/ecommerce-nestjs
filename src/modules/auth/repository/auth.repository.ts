@@ -1,24 +1,64 @@
 import { Injectable } from '@nestjs/common';
-import { AuthProvider, AuthTokenType } from '@prisma/client';
+import {
+  AuthProvider,
+  type AuthToken,
+  AuthTokenType,
+  type RefreshToken,
+  type User,
+} from '@prisma/client';
 
 import { PrismaService } from '../../../database/prisma.service';
 import type { AuthUserShape } from '../auth.types';
+
+interface CreateLocalUserInput {
+  email: string;
+  name: string;
+  passwordHash: string;
+}
+
+interface CreateOAuthUserInput {
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  provider: AuthProvider;
+  providerId: string;
+  emailVerified: boolean;
+}
+
+interface CreateAuthTokenInput {
+  userId: string;
+  type: AuthTokenType;
+  tokenHash: string;
+  expiresAt: Date;
+}
+
+interface CreateRefreshTokenInput {
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  device: string | null;
+  ip: string | null;
+}
+
+interface RefreshTokenWithUser {
+  user: AuthUserShape;
+}
 
 @Injectable()
 export class AuthRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUserByEmail(email: string) {
+  async findUserByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async findUserByProvider(provider: AuthProvider, providerId: string) {
+  async findUserByProvider(provider: AuthProvider, providerId: string): Promise<User | null> {
     return this.prisma.user.findFirst({
       where: { provider, providerId },
     });
   }
 
-  async createLocalUser(data: { email: string; name: string; passwordHash: string }) {
+  async createLocalUser(data: CreateLocalUserInput): Promise<User> {
     return this.prisma.user.create({
       data: {
         ...data,
@@ -28,14 +68,7 @@ export class AuthRepository {
     });
   }
 
-  async createOAuthUser(data: {
-    email: string;
-    name: string | null;
-    avatarUrl: string | null;
-    provider: AuthProvider;
-    providerId: string;
-    emailVerified: boolean;
-  }) {
+  async createOAuthUser(data: CreateOAuthUserInput): Promise<User> {
     return this.prisma.user.create({
       data: {
         ...data,
@@ -58,12 +91,7 @@ export class AuthRepository {
     });
   }
 
-  async createAuthToken(data: {
-    userId: string;
-    type: AuthTokenType;
-    tokenHash: string;
-    expiresAt: Date;
-  }) {
+  async createAuthToken(data: CreateAuthTokenInput): Promise<AuthToken> {
     return this.prisma.authToken.create({ data });
   }
 
@@ -73,7 +101,7 @@ export class AuthRepository {
     });
   }
 
-  async findValidAuthToken(type: AuthTokenType, tokenHash: string) {
+  async findValidAuthToken(type: AuthTokenType, tokenHash: string): Promise<AuthToken | null> {
     return this.prisma.authToken.findFirst({
       where: {
         type,
@@ -116,19 +144,11 @@ export class AuthRepository {
     ]);
   }
 
-  async createRefreshToken(data: {
-    userId: string;
-    tokenHash: string;
-    expiresAt: Date;
-    device: string | null;
-    ip: string | null;
-  }) {
+  async createRefreshToken(data: CreateRefreshTokenInput): Promise<RefreshToken> {
     return this.prisma.refreshToken.create({ data });
   }
 
-  async findRefreshTokenWithUser(tokenHash: string): Promise<{
-    user: AuthUserShape;
-  } | null> {
+  async findRefreshTokenWithUser(tokenHash: string): Promise<RefreshTokenWithUser | null> {
     const row = await this.prisma.refreshToken.findFirst({
       where: { tokenHash, expiresAt: { gt: new Date() } },
       include: {
