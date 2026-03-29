@@ -139,9 +139,11 @@ describe('AuthService', () => {
       id: 'u1',
       email: 'john@example.com',
       name: 'John',
+      role: 'USER',
       provider: AuthProvider.LOCAL,
       passwordHash: 'hash',
       emailVerified: true,
+      deletedAt: null,
     } as never);
     (argon2.verify as jest.Mock).mockResolvedValue(false);
 
@@ -155,9 +157,11 @@ describe('AuthService', () => {
       id: 'u1',
       email: 'john@example.com',
       name: 'John',
+      role: 'USER',
       provider: AuthProvider.LOCAL,
       passwordHash: 'hash',
       emailVerified: false,
+      deletedAt: null,
     } as never);
     (argon2.verify as jest.Mock).mockResolvedValue(true);
 
@@ -189,7 +193,9 @@ describe('AuthService', () => {
     repo.findUserByEmail.mockResolvedValue({
       id: 'u1',
       email: 'john@example.com',
+      role: 'USER',
       provider: AuthProvider.LOCAL,
+      deletedAt: null,
     } as never);
     tokens.generateOpaqueToken.mockReturnValue('reset-raw');
     tokens.hashToken.mockReturnValue('reset-hash');
@@ -224,7 +230,9 @@ describe('AuthService', () => {
     repo.findUserByProvider.mockResolvedValue(null);
     repo.findUserByEmail.mockResolvedValue({
       id: 'u1',
+      role: 'USER',
       provider: AuthProvider.LOCAL,
+      deletedAt: null,
     } as never);
 
     await expect(

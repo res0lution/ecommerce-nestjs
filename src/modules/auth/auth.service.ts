@@ -75,6 +75,7 @@ export class AuthService {
     const user = await this.repo.findUserByEmail(email);
     if (
       user === null ||
+      user.deletedAt !== null ||
       user.provider !== AuthProvider.LOCAL ||
       user.passwordHash === null ||
       user.passwordHash === ''
@@ -132,7 +133,7 @@ export class AuthService {
 
   async forgotPassword(email: string): Promise<void> {
     const user = await this.repo.findUserByEmail(email);
-    if (!user || user.provider !== AuthProvider.LOCAL) {
+    if (!user || user.deletedAt !== null || user.provider !== AuthProvider.LOCAL) {
       return;
     }
     const raw = this.tokens.generateOpaqueToken();
@@ -173,6 +174,9 @@ export class AuthService {
   ): Promise<AuthTokensResult> {
     let user = await this.repo.findUserByProvider(provider, providerId);
     if (user) {
+      if (user.deletedAt !== null) {
+        throw new ForbiddenException('User is deactivated');
+      }
       this.logger.log(`OAuth login provider=${provider} userId=${user.id}`);
       const accessToken = this.tokens.signAccess(user);
       const { rawToken: refreshToken } = await this.tokens.createRefreshSession(user.id, {});
@@ -184,10 +188,13 @@ export class AuthService {
     }
 
     const byEmail = await this.repo.findUserByEmail(email);
+    if (byEmail !== null && byEmail.deletedAt !== null) {
+      throw new ConflictException('Email already registered');
+    }
     if (byEmail?.provider === AuthProvider.LOCAL) {
       throw new ConflictException('Email already registered with password');
     }
-    if (byEmail) {
+    if (byEmail !== null) {
       throw new ConflictException('Email already linked to another provider');
     }
 

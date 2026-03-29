@@ -49,7 +49,7 @@ describe('TokenService', () => {
   it('signAccess signs payload with configured secret', () => {
     jwt.sign.mockReturnValue('jwt-token');
 
-    const token = service.signAccess({ id: 'u1', email: 'john@example.com' });
+    const token = service.signAccess({ id: 'u1', email: 'john@example.com', role: 'USER' });
 
     expect(jwt.sign).toHaveBeenCalledWith(
       { sub: 'u1', email: 'john@example.com', role: 'USER' },
@@ -88,8 +88,10 @@ describe('TokenService', () => {
         id: 'u1',
         email: 'john@example.com',
         name: 'John',
+        role: 'USER',
         provider: 'LOCAL',
         emailVerified: true,
+        deletedAt: null,
       },
     });
 

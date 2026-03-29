@@ -22,11 +22,11 @@ export class TokenService {
     return randomBytes(32).toString('hex');
   }
 
-  signAccess(user: { id: string; email: string }): string {
+  signAccess(user: { id: string; email: string; role: AccessPayload['role'] }): string {
     const payload: AccessPayload = {
       sub: user.id,
       email: user.email,
-      role: 'USER',
+      role: user.role,
     };
     return this.jwt.sign(payload, {
       secret: this.config.getOrThrow<string>('jwt.accessSecret'),
@@ -59,6 +59,9 @@ export class TokenService {
     const row = await this.repo.findRefreshTokenWithUser(tokenHash);
     if (!row) {
       throw new UnauthorizedException('Invalid refresh token');
+    }
+    if (row.user.deletedAt !== null) {
+      throw new UnauthorizedException('User is deactivated');
     }
     return row.user;
   }

@@ -9,8 +9,11 @@ import { LoggerModule } from 'nestjs-pino';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { configuration } from './config';
 import { PrismaModule } from './database/prisma.module';
+import { AddressModule } from './modules/address/address.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ProfileModule } from './modules/profile/profile.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import { getBullRootOptions } from './queues/bull.config';
 
 @Module({
@@ -68,6 +71,9 @@ import { getBullRootOptions } from './queues/bull.config';
     PrismaModule,
     NotificationsModule,
     AuthModule,
+    ProfileModule,
+    AddressModule,
+    SettingsModule,
   ],
   controllers: [],
   providers: [

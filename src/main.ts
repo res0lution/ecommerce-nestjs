@@ -31,6 +31,9 @@ async function bootstrap(): Promise<void> {
     .setTitle('E-commerce API')
     .setVersion('1.0')
     .addTag('auth')
+    .addTag('profile')
+    .addTag('address')
+    .addTag('settings')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);

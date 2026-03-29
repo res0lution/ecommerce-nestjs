@@ -7,42 +7,15 @@ import {
   type User,
 } from '@prisma/client';
 
-import { PrismaService } from '../../../database/prisma.service';
-import type { AuthUserShape } from '../auth.types';
+import { PrismaService } from '@/database/prisma.service';
 
-interface CreateLocalUserInput {
-  email: string;
-  name: string;
-  passwordHash: string;
-}
-
-interface CreateOAuthUserInput {
-  email: string;
-  name: string | null;
-  avatarUrl: string | null;
-  provider: AuthProvider;
-  providerId: string;
-  emailVerified: boolean;
-}
-
-interface CreateAuthTokenInput {
-  userId: string;
-  type: AuthTokenType;
-  tokenHash: string;
-  expiresAt: Date;
-}
-
-interface CreateRefreshTokenInput {
-  userId: string;
-  tokenHash: string;
-  expiresAt: Date;
-  device: string | null;
-  ip: string | null;
-}
-
-interface RefreshTokenWithUser {
-  user: AuthUserShape;
-}
+import type {
+  CreateAuthTokenInput,
+  CreateLocalUserInput,
+  CreateOAuthUserInput,
+  CreateRefreshTokenInput,
+  RefreshTokenWithUser,
+} from '../auth.types';
 
 @Injectable()
 export class AuthRepository {
@@ -157,8 +130,10 @@ export class AuthRepository {
             id: true,
             email: true,
             name: true,
+            role: true,
             provider: true,
             emailVerified: true,
+            deletedAt: true,
           },
         },
       },

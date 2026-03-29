@@ -1,17 +1,19 @@
-import type { AuthProvider } from '@prisma/client';
+import type { AuthProvider, AuthTokenType, UserRole } from '@prisma/client';
 
 export interface AccessPayload {
   sub: string;
   email: string;
-  role: 'USER';
+  role: UserRole;
 }
 
 export interface AuthUserShape {
   id: string;
   email: string;
   name: string | null;
+  role: UserRole;
   provider: AuthProvider;
   emailVerified: boolean;
+  deletedAt: Date | null;
 }
 
 export interface AuthUserPublic {
@@ -52,4 +54,38 @@ export interface OAuthUserProfile {
   name: string | null;
   avatarUrl: string | null;
   emailVerified: boolean;
+}
+
+export interface CreateLocalUserInput {
+  email: string;
+  name: string;
+  passwordHash: string;
+}
+
+export interface CreateOAuthUserInput {
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  provider: AuthProvider;
+  providerId: string;
+  emailVerified: boolean;
+}
+
+export interface CreateAuthTokenInput {
+  userId: string;
+  type: AuthTokenType;
+  tokenHash: string;
+  expiresAt: Date;
+}
+
+export interface CreateRefreshTokenInput {
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  device: string | null;
+  ip: string | null;
+}
+
+export interface RefreshTokenWithUser {
+  user: AuthUserShape;
 }
