@@ -9,7 +9,8 @@ import {
 import { AuthProvider, AuthTokenType } from '@prisma/client';
 import * as argon2 from 'argon2';
 
-import { AuthEmailProducer } from '../../queues/auth-email.producer';
+import { AuthEmailProducer } from '@/queues/auth-email/auth-email.producer';
+
 import { RESET_TTL_MS, VERIFY_TTL_MS } from './auth.constants';
 import type { AuthTokensResult, RefreshResult } from './auth.types';
 import { AuthRepository } from './repository/auth.repository';

@@ -10,6 +10,19 @@ const envSchema = z.object({
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.coerce.number().default(6379),
 
+  CATALOG_CACHE_ENABLED: z.coerce.boolean().default(true),
+  CATALOG_CACHE_CATEGORIES_TTL_SECONDS: z.coerce.number().int().min(300).max(3600).default(900),
+  CATALOG_CACHE_FILTERS_TTL_SECONDS: z.coerce.number().int().min(300).max(900).default(600),
+  CATALOG_CACHE_PRODUCTS_LIST_TTL_SECONDS: z.coerce.number().int().min(30).max(120).default(60),
+  CATALOG_CACHE_PRODUCT_DETAILS_TTL_SECONDS: z.coerce.number().int().min(60).max(300).default(180),
+
+  ELASTICSEARCH_ENABLED: z.coerce.boolean().default(false),
+  ELASTICSEARCH_NODE: z.string().url().default('http://localhost:9200'),
+  ELASTICSEARCH_USERNAME: z.string().default('elastic'),
+  ELASTICSEARCH_PASSWORD: z.string().optional().default(''),
+  ELASTICSEARCH_API_KEY: z.string().optional().default(''),
+  ELASTICSEARCH_PRODUCTS_INDEX: z.string().default('products_v1'),
+
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_ACCESS_EXPIRES: z.string().default('15m'),

@@ -1,18 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access -- supertest response typing */
 /* eslint-disable @typescript-eslint/no-unsafe-argument -- supertest */
 
-import { getQueueToken } from '@nestjs/bullmq';
 import { ValidationPipe } from '@nestjs/common';
 import { INestApplication } from '@nestjs/common/interfaces';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Queue } from 'bullmq';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 
 import { AppModule } from '../app.module';
 import { PrismaService } from '../database/prisma.service';
-import { AuthEmailProducer } from '../queues/auth-email.producer';
-import { AUTH_EMAIL_QUEUE } from '../queues/queue.constants';
+import { AuthEmailProducer } from '../queues/auth-email/auth-email.producer';
+import { teardownE2eApp } from './e2e-teardown';
 
 describe('Profile/Address (e2e)', () => {
   let app: INestApplication;
@@ -70,12 +68,8 @@ describe('Profile/Address (e2e)', () => {
       await prisma.user.deleteMany({
         where: { email: { startsWith: 'profile-e2e-' } },
       });
-      await prisma.$disconnect();
     }
-
-    const authEmailQueue = app.get<Queue>(getQueueToken(AUTH_EMAIL_QUEUE), { strict: false });
-    await authEmailQueue.close();
-    await app.close();
+    await teardownE2eApp(app, prisma);
   });
 
   it('register + verify + login for profile flow', async () => {

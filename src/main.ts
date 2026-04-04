@@ -34,6 +34,7 @@ async function bootstrap(): Promise<void> {
     .addTag('profile')
     .addTag('address')
     .addTag('settings')
+    .addTag('catalog')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);

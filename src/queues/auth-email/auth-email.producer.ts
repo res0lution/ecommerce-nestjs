@@ -2,8 +2,8 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { type JobsOptions, Queue } from 'bullmq';
 
-import { AuthEmailJobName, type AuthEmailPayload } from './auth-email.types';
-import { AUTH_EMAIL_QUEUE } from './queue.constants';
+import { AuthEmailJobName, type AuthEmailPayload } from '../auth-email/auth-email.types';
+import { AUTH_EMAIL_QUEUE } from '../queue.constants';
 
 @Injectable()
 export class AuthEmailProducer {

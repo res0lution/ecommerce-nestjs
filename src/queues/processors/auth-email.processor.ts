@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 
 import { EmailService } from '../../modules/notifications/email.service';
-import { AuthEmailJobName, type AuthEmailPayload } from '../auth-email.types';
+import { AuthEmailJobName, type AuthEmailPayload } from '../auth-email/auth-email.types';
 import { AUTH_EMAIL_QUEUE } from '../queue.constants';
 
 @Injectable()

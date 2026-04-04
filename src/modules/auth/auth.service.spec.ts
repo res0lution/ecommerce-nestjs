@@ -7,7 +7,7 @@ import {
 import { AuthProvider, AuthTokenType } from '@prisma/client';
 import * as argon2 from 'argon2';
 
-import { AuthEmailProducer } from '../../queues/auth-email.producer';
+import { AuthEmailProducer } from '../../queues/auth-email/auth-email.producer';
 import { AuthService } from './auth.service';
 import { AuthRepository } from './repository/auth.repository';
 import { TokenService } from './token.service';

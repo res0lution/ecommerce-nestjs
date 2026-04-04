@@ -9,7 +9,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "prebuild": "pnpm run prisma:generate",
+    "prebuild": "",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
@@ -39,6 +39,7 @@
     ]
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^9.3.4",
     "@nest-lab/throttler-storage-redis": "^1.2.0",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",

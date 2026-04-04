@@ -3,8 +3,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { configuration } from './config';
-import { AuthEmailWorkerModule } from './queues/auth-email-worker.module';
+import { AuthEmailWorkerModule } from './queues/auth-email/auth-email-worker.module';
 import { getBullRootOptions } from './queues/bull.config';
+import { ProductSearchIndexWorkerModule } from './queues/product-search-index/product-search-index-worker.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { getBullRootOptions } from './queues/bull.config';
       useFactory: getBullRootOptions,
     }),
     AuthEmailWorkerModule,
+    ProductSearchIndexWorkerModule,
   ],
 })
 export class WorkerModule {}

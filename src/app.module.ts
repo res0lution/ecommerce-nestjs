@@ -11,6 +11,7 @@ import { configuration } from './config';
 import { PrismaModule } from './database/prisma.module';
 import { AddressModule } from './modules/address/address.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CatalogModule } from './modules/catalog/catalog.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { SettingsModule } from './modules/settings/settings.module';
@@ -74,6 +75,7 @@ import { getBullRootOptions } from './queues/bull.config';
     ProfileModule,
     AddressModule,
     SettingsModule,
+    CatalogModule,
   ],
   controllers: [],
   providers: [

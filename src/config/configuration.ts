@@ -14,10 +14,28 @@ export default (): Record<string, unknown> => ({
     port: env.REDIS_PORT,
     url: `redis://${env.REDIS_HOST}:${env.REDIS_PORT}`,
   },
+  catalogCache: {
+    enabled: env.CATALOG_CACHE_ENABLED,
+    ttlSeconds: {
+      categories: env.CATALOG_CACHE_CATEGORIES_TTL_SECONDS,
+      filters: env.CATALOG_CACHE_FILTERS_TTL_SECONDS,
+      productsList: env.CATALOG_CACHE_PRODUCTS_LIST_TTL_SECONDS,
+      productDetails: env.CATALOG_CACHE_PRODUCT_DETAILS_TTL_SECONDS,
+    },
+  },
+
+  elasticsearch: {
+    enabled: env.ELASTICSEARCH_ENABLED,
+    node: env.ELASTICSEARCH_NODE,
+    username: env.ELASTICSEARCH_USERNAME,
+    password: env.ELASTICSEARCH_PASSWORD,
+    apiKey: env.ELASTICSEARCH_API_KEY,
+    productsIndex: env.ELASTICSEARCH_PRODUCTS_INDEX,
+  },
 
   logger: {
     level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-    usePretty: env.NODE_ENV !== 'production',
+    usePretty: env.NODE_ENV !== 'production' && env.NODE_ENV !== 'test',
   },
 
   jwt: {
