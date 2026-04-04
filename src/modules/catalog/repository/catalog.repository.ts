@@ -426,6 +426,13 @@ export class CatalogRepository {
       isActive: product.isActive,
       isBestSeller: product.isBestSeller,
       popularityScore: product.popularityScore,
+      ratingAvg: product.ratingAvg,
+      reviewsCount: product.reviewsCount,
+      rating1: product.rating1,
+      rating2: product.rating2,
+      rating3: product.rating3,
+      rating4: product.rating4,
+      rating5: product.rating5,
       category: {
         id: product.category.id,
         name: product.category.name,

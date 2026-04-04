@@ -14,6 +14,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { getBullRootOptions } from './queues/bull.config';
 
@@ -76,6 +77,7 @@ import { getBullRootOptions } from './queues/bull.config';
     AddressModule,
     SettingsModule,
     CatalogModule,
+    ReviewsModule,
   ],
   controllers: [],
   providers: [

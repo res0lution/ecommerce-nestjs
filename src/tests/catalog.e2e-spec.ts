@@ -54,12 +54,13 @@ describe('Catalog (e2e)', () => {
   });
 
   afterAll(async () => {
+    const catalogProductSlugs = [primarySlug, recommendationSlug, kidsProductSlug];
     if (prisma !== undefined) {
       await prisma.productAttributeValue.deleteMany({
         where: {
           product: {
             slug: {
-              startsWith: 'e2e-',
+              in: catalogProductSlugs,
             },
           },
         },
@@ -68,7 +69,7 @@ describe('Catalog (e2e)', () => {
         where: {
           product: {
             slug: {
-              startsWith: 'e2e-',
+              in: catalogProductSlugs,
             },
           },
         },
@@ -77,7 +78,7 @@ describe('Catalog (e2e)', () => {
         where: {
           product: {
             slug: {
-              startsWith: 'e2e-',
+              in: catalogProductSlugs,
             },
           },
         },
@@ -86,7 +87,7 @@ describe('Catalog (e2e)', () => {
         where: {
           product: {
             slug: {
-              startsWith: 'e2e-',
+              in: catalogProductSlugs,
             },
           },
         },
@@ -94,7 +95,7 @@ describe('Catalog (e2e)', () => {
       await prisma.product.deleteMany({
         where: {
           slug: {
-            startsWith: 'e2e-',
+            in: catalogProductSlugs,
           },
         },
       });
@@ -115,7 +116,7 @@ describe('Catalog (e2e)', () => {
       await prisma.category.deleteMany({
         where: {
           slug: {
-            startsWith: 'e2e-',
+            in: [menSlug, kidsSlug],
           },
         },
       });
@@ -368,7 +369,7 @@ describe('Catalog (e2e)', () => {
         productId: primary.id,
         userId: user.id,
         rating: 5,
-        comment: 'Great',
+        content: 'Great running shoes for daily training',
       },
     });
 

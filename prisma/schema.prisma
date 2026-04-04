@@ -29,6 +29,12 @@ enum ProductGender {
   UNISEX
 }
 
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   email         String       @unique
@@ -144,6 +150,13 @@ model Product {
   isActive        Boolean     @default(true)
   isBestSeller    Boolean     @default(false)
   popularityScore Int         @default(0)
+  ratingAvg       Float       @default(0)
+  reviewsCount    Int         @default(0)
+  rating1         Int         @default(0)
+  rating2         Int         @default(0)
+  rating3         Int         @default(0)
+  rating4         Int         @default(0)
+  rating5         Int         @default(0)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -233,17 +246,25 @@ model ProductAttributeValue {
 }
 
 model Review {
-  id        String   @id @default(uuid()) @db.Uuid
-  productId String   @db.Uuid
-  userId    String   @db.Uuid
-  rating    Int
-  comment   String
-  createdAt DateTime @default(now())
+  id                 String       @id @default(uuid()) @db.Uuid
+  productId          String       @db.Uuid
+  userId             String       @db.Uuid
+  rating             Int
+  title              String?
+  content            String
+  pros               String?
+  cons               String?
+  isVerifiedPurchase Boolean      @default(false)
+  status             ReviewStatus @default(APPROVED)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([productId])
+  @@unique([productId, userId])
+  @@index([productId, status, createdAt(sort: Desc)])
+  @@index([productId, status, rating(sort: Desc), createdAt(sort: Desc)])
   @@index([userId])
   @@map("reviews")
 }

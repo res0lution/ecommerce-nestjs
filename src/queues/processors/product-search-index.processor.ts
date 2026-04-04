@@ -46,11 +46,6 @@ export class ProductSearchIndexProcessor extends WorkerHost {
           acc[key] = list;
           return acc;
         }, {});
-        const ratingAverage =
-          product.reviews.length > 0
-            ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-              product.reviews.length
-            : 0;
         const categoryPath = [product.category.slug];
 
         await this.searchService.indexProduct({
@@ -63,7 +58,7 @@ export class ProductSearchIndexProcessor extends WorkerHost {
           colors,
           sizes,
           attributes,
-          popularity: product.popularityScore + Math.round(ratingAverage * 10),
+          popularity: product.popularityScore + Math.round(product.ratingAvg * 10),
           isActive: product.isActive,
         });
         await this.cache.invalidateProduct(product.slug, product.category.slug);

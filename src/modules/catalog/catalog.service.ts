@@ -216,12 +216,6 @@ export class CatalogService {
       }
       attributes[key] = list;
     }
-    const reviewsCount = product.reviews.length;
-    const ratingAverage =
-      reviewsCount > 0
-        ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewsCount
-        : 0;
-
     return {
       id: product.id,
       title: product.title,
@@ -230,8 +224,8 @@ export class CatalogService {
       variants,
       images: product.images.map((image) => image.url),
       attributes,
-      rating: Number(ratingAverage.toFixed(2)),
-      reviewsCount,
+      rating: Number(product.ratingAvg.toFixed(2)),
+      reviewsCount: product.reviewsCount,
     };
   }
 
