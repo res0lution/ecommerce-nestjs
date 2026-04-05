@@ -23,6 +23,14 @@ export default (): Record<string, unknown> => ({
       productDetails: env.CATALOG_CACHE_PRODUCT_DETAILS_TTL_SECONDS,
     },
   },
+  commerceCache: {
+    enabled: env.COMMERCE_CACHE_ENABLED,
+    ttlSeconds: {
+      cart: env.COMMERCE_CACHE_CART_TTL_SECONDS,
+      ordersList: env.COMMERCE_CACHE_ORDERS_LIST_TTL_SECONDS,
+      orderDetails: env.COMMERCE_CACHE_ORDER_DETAILS_TTL_SECONDS,
+    },
+  },
 
   elasticsearch: {
     enabled: env.ELASTICSEARCH_ENABLED,
@@ -68,5 +76,19 @@ export default (): Record<string, unknown> => ({
   auth: {
     refreshCookieName: env.AUTH_REFRESH_COOKIE_NAME,
     cookieSecure: env.NODE_ENV === 'production',
+  },
+
+  checkout: {
+    currency: env.CHECKOUT_CURRENCY,
+    deliveryFixedAmount: env.CHECKOUT_DELIVERY_FIXED_AMOUNT,
+  },
+
+  payments: {
+    yookassa: {
+      shopId: env.YOOKASSA_SHOP_ID,
+      secretKey: env.YOOKASSA_SECRET_KEY,
+      returnUrl: env.YOOKASSA_RETURN_URL,
+      webhookSecret: env.YOOKASSA_WEBHOOK_SECRET,
+    },
   },
 });

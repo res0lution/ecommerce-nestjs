@@ -9,12 +9,12 @@ import { CatalogCacheService } from '@/modules/catalog/cache/catalog-cache.servi
 import { ProductSearchIndexProducer } from '@/queues/product-search-index/product-search-index.producer';
 
 import { ReviewsCacheService } from './cache/reviews-cache.service';
+import type { ReviewEntity } from './entities';
 import { ReviewsRepository } from './repository/reviews.repository';
 import type {
   CreateReviewInput,
   ListProductReviewsInput,
   ProductReviewsListResult,
-  ReviewResult,
   UpdateReviewInput,
 } from './reviews.types';
 
@@ -54,7 +54,7 @@ export class ReviewsService {
     return response;
   }
 
-  async createReview(userId: string, dto: CreateReviewInput): Promise<ReviewResult> {
+  async createReview(userId: string, dto: CreateReviewInput): Promise<ReviewEntity> {
     this.ensureNoForbiddenWords(dto);
 
     const product = await this.repository.findProductById(dto.productId);
@@ -81,7 +81,7 @@ export class ReviewsService {
     userId: string,
     reviewId: string,
     dto: UpdateReviewInput,
-  ): Promise<ReviewResult> {
+  ): Promise<ReviewEntity> {
     const existing = await this.repository.findByIdForUser(reviewId, userId);
     if (!existing) {
       throw new NotFoundException('Review not found');

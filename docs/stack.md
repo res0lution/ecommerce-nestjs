@@ -1,110 +1,34 @@
-Monolith Rest Api
+# Stack
 
-Backend
-NestJS
-TypeScript
+## Language and framework
 
-Database
-PostgreSQL
-Prisma
+- TypeScript
+- NestJS 11
 
-Cache
-Redis
+## Data layer
 
-Queue
-BullMQ
+- PostgreSQL
+- Prisma ORM
 
-Search
-Elasticsearch
+## Caching and infra services
 
-Auth
-JWT + Passport
+- Redis (cache + throttling storage + BullMQ backend)
+- BullMQ for async jobs
+- Optional Elasticsearch integration for catalog indexing/search
 
-Infra
-Docker
-GitHub Actions
+## Auth and security
 
-🚀 Рекомендуемый стек для backend e-commerce (JS/TS)
-1. Основной фреймворк
+- JWT access/refresh tokens
+- Passport strategies (local/JWT/OAuth)
+- Helmet, validation pipes and request throttling
 
-NestJS
+## API and docs
 
-🗄 База данных
+- REST API
+- Swagger (`/api/docs`)
 
-PostgreSQL
+## Runtime topology
 
-ORM
-
-Prisma
-
-⚡ Кэш
-
-Redis
-
-Используется для:
-
-кеширования товаров
-
-корзины
-
-сессий
-
-rate limiting
-
-🔐 Аутентификация
-
-JWT
-
-Passport.js
-
-Поддерживает:
-
-OAuth
-
-Google login
-
-email/password
-
-📦 Очереди задач
-
-Для e-commerce это обязательно.
-
-Например:
-
-отправка email
-
-обработка платежей
-
-обновление stock
-
-Используют:
-
-BullMQ
-
-
-🔎 Поиск товаров
-
-Если товаров много:
-
-Elasticsearch
-
-Позволяет:
-
-быстрый поиск
-
-фильтры
-
-автокомплит
-
-📡 API
-
-REST
-
-☁️ Инфраструктура
-Контейнеризация
-
-Docker
-
-CI/CD
-
-GitHub Actions
+- API process (`src/main.ts`)
+- Worker process (`src/worker.ts`) for queue consumers
+- Docker Compose for local PostgreSQL and Redis

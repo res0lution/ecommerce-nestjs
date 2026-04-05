@@ -4,7 +4,13 @@ import type { CategoryEntity } from './category.entity';
 import type { ProductAttributeEntity } from './product-attribute.entity';
 import type { ProductImageEntity } from './product-image.entity';
 import type { ProductVariantEntity } from './product-variant.entity';
-import type { ReviewEntity } from './review.entity';
+
+export interface ProductReviewEntity {
+  id: string;
+  productId: string;
+  userId: string;
+  rating: number;
+}
 
 export interface ProductEntity {
   id: string;
@@ -28,5 +34,5 @@ export interface ProductEntity {
   variants: ProductVariantEntity[];
   images: ProductImageEntity[];
   attributes: ProductAttributeEntity[];
-  reviews: ReviewEntity[];
+  reviews: ProductReviewEntity[];
 }

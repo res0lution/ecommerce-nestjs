@@ -11,8 +11,11 @@ import { configuration } from './config';
 import { PrismaModule } from './database/prisma.module';
 import { AddressModule } from './modules/address/address.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CartModule } from './modules/cart/cart.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SettingsModule } from './modules/settings/settings.module';
@@ -78,6 +81,9 @@ import { getBullRootOptions } from './queues/bull.config';
     SettingsModule,
     CatalogModule,
     ReviewsModule,
+    CartModule,
+    OrdersModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [

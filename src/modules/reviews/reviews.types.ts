@@ -1,4 +1,4 @@
-import type { ReviewStatus } from '@prisma/client';
+import type { ReviewEntity } from './entities';
 
 export type ReviewListSort = 'latest' | 'rating';
 
@@ -9,23 +9,8 @@ export interface ListProductReviewsInput {
   rating?: number;
 }
 
-export interface ReviewResult {
-  id: string;
-  productId: string;
-  userId: string;
-  rating: number;
-  title: string | null;
-  content: string;
-  pros: string | null;
-  cons: string | null;
-  isVerifiedPurchase: boolean;
-  status: ReviewStatus;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface ProductReviewsListResult {
-  items: ReviewResult[];
+  items: ReviewEntity[];
   meta: {
     total: number;
     page: number;

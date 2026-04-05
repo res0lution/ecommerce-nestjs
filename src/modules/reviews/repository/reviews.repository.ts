@@ -3,10 +3,10 @@ import { Prisma, ReviewStatus } from '@prisma/client';
 
 import { PrismaService } from '@/database/prisma.service';
 
+import type { ReviewEntity } from '../entities';
 import type {
   CreateReviewInput,
   ListProductReviewsInput,
-  ReviewResult,
   UpdateReviewInput,
 } from '../reviews.types';
 
@@ -50,7 +50,7 @@ export class ReviewsRepository {
   async findByIdForUser(
     reviewId: string,
     userId: string,
-  ): Promise<Pick<ReviewResult, 'id' | 'productId'> | null> {
+  ): Promise<Pick<ReviewEntity, 'id' | 'productId'> | null> {
     return this.prisma.review.findFirst({
       where: { id: reviewId, userId },
       select: {
@@ -60,7 +60,7 @@ export class ReviewsRepository {
     });
   }
 
-  async findByProductAndUser(productId: string, userId: string): Promise<ReviewResult | null> {
+  async findByProductAndUser(productId: string, userId: string): Promise<ReviewEntity | null> {
     return this.prisma.review.findUnique({
       where: {
         productId_userId: {
@@ -71,7 +71,7 @@ export class ReviewsRepository {
     });
   }
 
-  async createForUser(userId: string, dto: CreateReviewInput): Promise<ReviewResult> {
+  async createForUser(userId: string, dto: CreateReviewInput): Promise<ReviewEntity> {
     return this.prisma.review.create({
       data: {
         userId,
@@ -86,7 +86,7 @@ export class ReviewsRepository {
     });
   }
 
-  async updateById(reviewId: string, dto: UpdateReviewInput): Promise<ReviewResult> {
+  async updateById(reviewId: string, dto: UpdateReviewInput): Promise<ReviewEntity> {
     const data: Prisma.ReviewUpdateInput = {
       ...(dto.rating !== undefined ? { rating: dto.rating } : {}),
       ...(dto.title !== undefined ? { title: dto.title } : {}),
@@ -109,7 +109,7 @@ export class ReviewsRepository {
   async listApprovedByProduct(
     productId: string,
     input: ListProductReviewsInput,
-  ): Promise<{ items: ReviewResult[]; total: number }> {
+  ): Promise<{ items: ReviewEntity[]; total: number }> {
     const where: Prisma.ReviewWhereInput = {
       productId,
       status: ReviewStatus.APPROVED,

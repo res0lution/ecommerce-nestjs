@@ -35,6 +35,27 @@ enum ReviewStatus {
   REJECTED
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  WAITING_FOR_CAPTURE
+  SUCCEEDED
+  CANCELED
+  FAILED
+}
+
+enum PaymentProvider {
+  YOOKASSA
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   email         String       @unique
@@ -55,6 +76,8 @@ model User {
   addresses     UserAddress[]
   settings      UserSettings?
   reviews       Review[]
+  cart          Cart?
+  orders        Order[]
 
   @@unique([provider, providerId], name: "provider_providerId")
   @@map("users")
@@ -165,6 +188,8 @@ model Product {
   images          ProductImage[]
   attributeValues ProductAttributeValue[]
   reviews         Review[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
 
   @@index([categoryId])
   @@index([isActive])
@@ -186,6 +211,8 @@ model ProductVariant {
 
   product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   images  ProductImage[]
+  cartItems CartItem[]
+  orderItems OrderItem[]
 
   @@index([productId])
   @@index([productId, isActive])
@@ -267,4 +294,120 @@ model Review {
   @@index([productId, status, rating(sort: Desc), createdAt(sort: Desc)])
   @@index([userId])
   @@map("reviews")
+}
+
+model Cart {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  cartId    String   @db.Uuid
+  productId String   @db.Uuid
+  variantId String   @db.Uuid
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@index([cartId, createdAt])
+  @@index([variantId])
+  @@map("cart_items")
+}
+
+model Order {
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @db.Uuid
+  number         String        @unique
+  status         OrderStatus   @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  currency       String        @default("RUB")
+  subtotal       Decimal       @db.Decimal(10, 2)
+  deliveryAmount Decimal       @db.Decimal(10, 2)
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  deliveryEta    DateTime?
+  deliveredAt    DateTime?
+  cancelledAt    DateTime?
+  cancelReason   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+  payment Payment?
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String   @id @default(uuid()) @db.Uuid
+  orderId          String   @db.Uuid
+  productId        String   @db.Uuid
+  variantId        String   @db.Uuid
+  titleSnapshot    String
+  imageUrlSnapshot String?
+  sizeSnapshot     String?
+  quantity         Int
+  unitPrice        Decimal  @db.Decimal(10, 2)
+  lineTotal        Decimal  @db.Decimal(10, 2)
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+model Payment {
+  id                String          @id @default(uuid()) @db.Uuid
+  orderId           String          @unique @db.Uuid
+  provider          PaymentProvider @default(YOOKASSA)
+  providerPaymentId String?         @unique
+  status            PaymentStatus   @default(PENDING)
+  amount            Decimal         @db.Decimal(10, 2)
+  currency          String          @default("RUB")
+  confirmationUrl   String?
+  idempotenceKey    String?
+  paidAt            DateTime?
+  failureReason     String?
+  rawPayload        Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([provider, providerPaymentId])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("payments")
+}
+
+model PaymentWebhookEvent {
+  id          String          @id @default(uuid()) @db.Uuid
+  provider    PaymentProvider
+  eventId     String          @unique
+  eventType   String
+  payload     Json
+  processedAt DateTime        @default(now())
+
+  @@index([provider, processedAt(sort: Desc)])
+  @@map("payment_webhook_events")
 }

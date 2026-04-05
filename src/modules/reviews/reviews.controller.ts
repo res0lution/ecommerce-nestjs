@@ -31,8 +31,9 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { ListProductReviewsQueryDto } from './dto/list-product-reviews-query.dto';
 import { ProductReviewsListResponseDto, ReviewResponseDto } from './dto/review-response.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import type { ReviewEntity } from './entities';
 import { ReviewsService } from './reviews.service';
-import type { ProductReviewsListResult, ReviewResult } from './reviews.types';
+import type { ProductReviewsListResult } from './reviews.types';
 
 @ApiTags('reviews')
 @Controller()
@@ -65,7 +66,7 @@ export class ReviewsController {
   async createReview(
     @CurrentUser() user: AccessPayload,
     @Body() dto: CreateReviewDto,
-  ): Promise<ReviewResult> {
+  ): Promise<ReviewEntity> {
     return this.service.createReview(user.sub, dto);
   }
 
@@ -80,7 +81,7 @@ export class ReviewsController {
     @CurrentUser() user: AccessPayload,
     @Param('id', ParseUUIDPipe) reviewId: string,
     @Body() dto: UpdateReviewDto,
-  ): Promise<ReviewResult> {
+  ): Promise<ReviewEntity> {
     return this.service.updateReview(user.sub, reviewId, dto);
   }
 

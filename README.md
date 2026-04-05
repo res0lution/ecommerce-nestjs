@@ -1,98 +1,121 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# E-commerce NestJS API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Production-oriented ecommerce backend on NestJS + Prisma + PostgreSQL with auth, catalog, reviews, cart, orders, payments and background workers.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Core Modules
 
-## Description
+- `auth` - registration, login, OAuth, refresh sessions, email verification.
+- `profile`, `address`, `settings` - user account data.
+- `catalog` - categories, products, variants, filters, search indexing hooks.
+- `reviews` - product reviews with aggregate rating updates.
+- `cart` - cart items, totals and validation against stock.
+- `orders` - checkout and order lifecycle.
+- `payments` - YooKassa payment flow and webhooks.
+- `queues` - BullMQ producers/processors (`auth-email`, `product-search-index`).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Project setup
+- Node.js `>=20`
+- npm `>=10` (or pnpm/yarn if preferred)
+- Docker + Docker Compose
+
+## Quick Start
+
+1) Install dependencies:
 
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Compile and run the project
+2) Prepare local env:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+3) Start infrastructure:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker compose -f docker/docker-compose.yml --env-file .env up -d
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+4) Run Prisma migrations:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm run prisma:migrate:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+5) Fill database with demo data:
 
-## Resources
+```bash
+pnpm run prisma:seed
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+6) Start API:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+pnpm run start:dev
+```
 
-## Support
+7) (Optional) Start workers in a separate terminal:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+pnpm run start:worker:dev
+```
 
-## Stay in touch
+## API and Docs
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Swagger UI: `http://localhost:3000/api/docs`
+- API prefix: `/api`
 
-## License
+## Seed Data
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+`pnpm run prisma:seed` creates deterministic and idempotent demo data for:
+
+- full catalog graph (categories, products, variants, images, attributes),
+- users with settings and addresses,
+- reviews and rating aggregates,
+- cart items, orders, payments and payment webhook events.
+
+Seeded local users:
+
+- `admin@seed.local`
+- `buyer@seed.local`
+- `reviewer@seed.local`
+- `guest@seed.local`
+
+Default password is printed by the seed command output.
+
+## Useful Commands
+
+```bash
+pnpm run start:dev
+pnpm run start:worker:dev
+pnpm run test
+pnpm run test:e2e
+pnpm run prisma:generate
+pnpm run prisma:studio
+```
+
+## Local Infrastructure Notes
+
+- `docker/docker-compose.yml` uses values from `.env` (`POSTGRES_*`, `POSTGRES_PORT`).
+- Elasticsearch service is present but commented in compose; API can run with ES disabled by setting `ELASTICSEARCH_ENABLED=false`.
+
+## Troubleshooting
+
+- `Env validation failed`: check required vars in `.env.example` and `src/config/env.validation.ts`.
+- Prisma connection errors: verify PostgreSQL container is up and `DATABASE_URL` is aligned with compose credentials.
+- Redis/BullMQ errors: ensure Redis container is running on `REDIS_HOST` / `REDIS_PORT`.
+- Seed conflicts: seed is idempotent; if you changed unique fields manually, re-run seed or clean affected records.
+
+## Project Documentation
+
+- `docs/setup-local.md` - full local setup.
+- `docs/env.md` - environment variables and defaults.
+- `docs/seeding.md` - seed structure and extension guidelines.
+- `docs/architecture.md` - module and data architecture.
+- `docs/api.md` - API usage and key flows.
+- `docs/operations.md` - workers, queues and operational guidance.
+- `docs/directories.md` - actual repository structure.
+- `docs/stack.md` - runtime stack used in this project.
